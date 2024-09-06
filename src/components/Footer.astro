@@ -1,0 +1,21 @@
+---
+import Icon from './Icon.astro';
+const currentYear = new Date().getFullYear();
+---
+
+<footer>
+    <div class="group">
+        Adapted and simplified from: <a href="https://astro.build/themes/details/portfolio/">Astro Portfolio (withastro)</a>
+        <Icon icon="rocket-launch" size="1.2em" />
+    </div>
+    <p>&copy; {currentYear} Juan Tecedor</p>
+</footer>
+
+<style>
+    footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 2.5rem 5rem;
+    }
+</style>
