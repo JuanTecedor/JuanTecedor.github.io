@@ -6,44 +6,65 @@ import Icon from '../components/Icon.astro';
 ---
 
 <Layout title="Juan's Personal Website">
-	<div class="stack gap-20 lg:gap-48">
-		<div class="wrapper stack gap-8 lg:gap-20">
-			<header class="hero">
-				<Hero
-					title="Hello, my name is Juan"
-					tagline="I am a Software Engineer who is currently based in Madrid, Spain."
-					align="start"
-				>
-					<div class="roles">
-						<Pill><Icon icon="c++-file" size="1.33em" /> C++</Pill>
-						<Pill><Icon icon="python-file" size="1.33em" /> Python</Pill>
-						<Pill><Icon icon="circuitry" size="1.33em" /> Cybersecurity</Pill>
-					</div>
-				</Hero>
-			</header>
-		</div>
-	</div>
+	<main class="wrapper stack gap-8 lg:gap-20">
+		<header class="hero">
+			<Hero
+				title="Hello, my name is Juan"
+				tagline="I am a Software Engineer who is currently based in Madrid, Spain."
+				align="start"
+			>
+				<div class="roles">
+					<Pill><Icon icon="c++-file" size="1.33em" /> C++</Pill>
+					<Pill><Icon icon="python-file" size="1.33em" /> Python</Pill>
+					<Pill><Icon icon="circuitry" size="1.33em" /> Cybersecurity</Pill>
+				</div>
+			</Hero>
+			<section>
+				<p>
+					I have over 2.5 years of professional experience in the field,
+					specializing in backend development and cybersecurity.
+					My focus is on delivering high-quality code that is fast, secure, testable, and easy to maintain.
+				</p>
+
+				<p>
+					Beyond my engineering role, I have conducted research and published a paper based on my final bachelor's thesis.
+				</p>
+
+				<p>
+					I am passionate about continuous learning and regularly experiment with new technologies through personal projects
+					and contributions to open source software to stay current in the rapidly evolving tech landscape.
+				</p>
+			</section>
+		</header>
+	</main>
 </Layout>
 
 <style>
 	.hero {
 		display: grid;
-		grid-template-columns: 6fr 4fr;
-		padding-inline: 2.5rem;
-		align-items: none;
-		gap: 10rem;
-	}
-
-	.hero img {
-		aspect-ratio: 3 / 4;
-		object-fit: cover;
-		border-radius: 2rem;
-		box-shadow: var(--shadow-md);
+		flex-direction: column;
+		align-items: center;
+		gap: 2rem;
 	}
 
 	.roles {
-		display: flex;
-		flex-direction: row;
-		gap: 0.5rem;
+		display: grid;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	@media (min-width: 50em) {
+		.hero {
+			grid-template-columns: 6fr 4fr;
+			padding-inline: 2.5rem;
+			align-items: none;
+			gap: 10rem;
+		}
+
+		.roles {
+			display: flex;
+			flex-direction: row;
+			gap: 0.5rem;
+		}
 	}
 </style>
