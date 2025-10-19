@@ -1,0 +1,91 @@
+---
+import Icon from "./Icon.astro";
+import type { iconPaths } from "../icons/IconPaths";
+
+const links: { label: string; href: string }[] = [{ label: "Home", href: "/" }];
+
+const socials: {
+  href: string;
+  icon: keyof typeof iconPaths;
+}[] = [
+  {
+    href: "https://github.com/JuanTecedor",
+    icon: "github-logo",
+  },
+  {
+    href: "https://www.linkedin.com/in/juan-t/",
+    icon: "linkedin-logo",
+  },
+];
+---
+
+<header>
+  <div class="start">
+    <Icon icon="terminal" size="1.5em" gradient />
+    Juan Tecedor
+  </div>
+
+  <nav>
+    <ul>
+      {
+        links.map(({ label, href }) => (
+          <li>
+            <a
+              aria-current={Astro.url.pathname === href}
+              class:list={[
+                "link",
+                {
+                  active:
+                    Astro.url.pathname === href ||
+                    (href !== "/" && Astro.url.pathname.startsWith(href)),
+                },
+              ]}
+              href={href}
+            >
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div class="social">
+    {
+      socials.map(({ href, icon }) => (
+        <a href={href} class="social">
+          <Icon icon={icon} size="1.5em" />
+        </a>
+      ))
+    }
+  </div>
+</header>
+
+<style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+
+  header a {
+    text-decoration: none;
+    color: black;
+  }
+
+  nav ul {
+    list-style: none;
+    display: inline-flex;
+    gap: 1em;
+  }
+
+  nav ul li a.active {
+    text-decoration: underline;
+  }
+
+  .social {
+    display: inline-flex;
+    gap: 0.5em;
+  }
+</style>
