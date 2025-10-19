@@ -1,16 +1,14 @@
 ---
 import Icon from "../components/Icon.astro";
-import BaseLayout from "../layouts/Layout.astro";
+import Layout from "../layouts/Layout.astro";
 ---
 
-<BaseLayout title="404 Not Found">
-    <main class="error">
-        <p><Icon icon="warning" /> 404 Not Found</p>
-    </main>
-</BaseLayout>
+<Layout title="404 Not Found">
+    <h1><Icon icon="warning" /> 404 Not Found</h1>
+</Layout>
 
 <style>
-    .error {
+    h1 {
         text-align: center;
         font-size: x-large;
     }

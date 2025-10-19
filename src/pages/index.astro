@@ -6,24 +6,19 @@ import Icon from "../components/Icon.astro";
 ---
 
 <Layout>
-	<main>
-		<header class="hero">
-			<Hero
-				title="Hi! I'm Juan,"
-				tagline="Software Engineer with a strong passion for programming and cybersecurity."
-			>
-				<div class="pills">
-					<Pill
-						><Icon icon="virus" size="1.33em" /> Cybersecurity</Pill
-					>
-					<Pill><Icon icon="python-file" size="1.33em" /> Python</Pill
-					>
-					<Pill><Icon icon="c++-file" size="1.33em" /> C++</Pill>
-					<Pill><Icon icon="linux" size="1.33em" />Linux</Pill>
-				</div>
-			</Hero>
-		</header>
-	</main>
+	<header class="hero">
+		<Hero
+			title="Hi! I'm Juan,"
+			tagline="Software Engineer with a strong passion for programming and cybersecurity."
+		>
+			<div class="pills">
+				<Pill><Icon icon="virus" size="1.33em" /> Cybersecurity</Pill>
+				<Pill><Icon icon="python-file" size="1.33em" /> Python</Pill>
+				<Pill><Icon icon="c++-file" size="1.33em" /> C++</Pill>
+				<Pill><Icon icon="linux" size="1.33em" />Linux</Pill>
+			</div>
+		</Hero>
+	</header>
 </Layout>
 
 <style>
