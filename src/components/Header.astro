@@ -25,7 +25,7 @@ const socials: {
 <header>
   <div class="start">
     <Icon icon="terminal" size="1.5em" gradient />
-    Juan Tecedor
+    <span class="name">Juan Tecedor</span>
   </div>
 
   <nav>
@@ -76,6 +76,24 @@ const socials: {
   header a {
     text-decoration: none;
     color: black;
+  }
+
+  .start {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .start .name {
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  @media (max-width: 400px) {
+    .start .name {
+      display: none;
+    }
   }
 
   nav ul {

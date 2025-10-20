@@ -59,20 +59,20 @@ const HEIGHT = 100;
     let startTime = 0;
     let lastBeat = -1;
 
-    const audioCtx = new AudioContext();
+    const audioContext = new AudioContext();
 
     function playBeatSound(isDownbeat = false) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
 
         osc.frequency.value = isDownbeat ? 880 : 440;
-        gain.gain.value = 0.1;
+        gain.gain.value = 0.2;
 
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(audioContext.destination);
 
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.05);
+        osc.stop(audioContext.currentTime + 0.05);
     }
 
     function drawRectangles(activeIndex = -1) {
@@ -115,13 +115,13 @@ const HEIGHT = 100;
         requestAnimationFrame(drawFrame);
     }
 
-    function startMetronome() {
+    async function startMetronome() {
         running = true;
         currentBeat = 0;
         lastBeat = -1;
         startTime = performance.now();
         button.textContent = "Stop";
-        audioCtx.resume();
+        await audioContext.resume();
         requestAnimationFrame(drawFrame);
     }
 
@@ -157,7 +157,7 @@ const HEIGHT = 100;
         });
     });
 
-    let tapTimes = [];
+    let tapTimes: Array<number> = [];
     tapButton.addEventListener("click", () => {
         const now = performance.now();
 
@@ -237,6 +237,11 @@ const HEIGHT = 100;
         border: none;
         border-radius: 8px;
         cursor: pointer;
+    }
+
+    #tap {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
     }
 
     #toggle:hover,
