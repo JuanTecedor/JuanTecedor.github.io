@@ -2,7 +2,10 @@
 import Icon from "./Icon.astro";
 import type { iconPaths } from "../icons/IconPaths";
 
-const links: { label: string; href: string }[] = [{ label: "Home", href: "/" }];
+const links: { label: string; href: string }[] = [
+  { label: "Home", href: "/" },
+  { label: "Widgets", href: "/widgets" },
+];
 
 const socials: {
   href: string;
@@ -67,6 +70,7 @@ const socials: {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 40px;
+    border-style: dashed none dashed none;
   }
 
   header a {
