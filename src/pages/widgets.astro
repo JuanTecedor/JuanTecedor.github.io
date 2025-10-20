@@ -18,7 +18,7 @@ const HEIGHT = 100;
                     <button class="beat-btn" data-beats="2">2</button>
                     <button class="beat-btn" data-beats="3">3</button>
                     <button class="beat-btn active" data-beats="4">4</button>
-                    <button class="beat-btn active" data-beats="5">5</button>
+                    <button class="beat-btn" data-beats="5">5</button>
                     <button class="beat-btn" data-beats="6">6</button>
                     <button class="beat-btn" data-beats="7">7</button>
                     <button class="beat-btn" data-beats="8">8</button>
@@ -29,6 +29,7 @@ const HEIGHT = 100;
                 <label for="bpm">BPM:</label>
                 <input type="range" id="bpm" min="40" max="240" value="120" />
                 <span id="bpm-value">120</span>
+                <button id="tap">Tap Tempo</button>
             </div>
         </div>
     </div>
@@ -41,6 +42,7 @@ const HEIGHT = 100;
     const bpmSlider = document.getElementById("bpm");
     const bpmValue = document.getElementById("bpm-value");
     const beatButtons = document.querySelectorAll(".beat-btn");
+    const tapButton = document.getElementById("tap");
 
     const WIDTH = 400;
     const HEIGHT = 100;
@@ -56,7 +58,7 @@ const HEIGHT = 100;
     let startTime = 0;
     let lastBeat = -1;
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioCtx = new AudioContext();
 
     function playBeatSound(isDownbeat = false) {
         const osc = audioCtx.createOscillator();
@@ -89,9 +91,7 @@ const HEIGHT = 100;
     }
 
     function drawFrame(timestamp) {
-        if (!running) {
-            return;
-        }
+        if (!running) return;
 
         const BEAT_DURATION = (60 / BPM) * 1000;
         const elapsed = timestamp - startTime;
@@ -137,16 +137,17 @@ const HEIGHT = 100;
         running ? stopMetronome() : startMetronome();
     });
 
-    bpmSlider.addEventListener("input", (e) => {
-        BPM = Number(e.target.value);
+    bpmSlider.addEventListener("input", (event) => {
+        const target = event.target as HTMLInputElement;
+        BPM = Number(target.value);
         bpmValue.textContent = String(BPM);
     });
 
-    beatButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
+    beatButtons.forEach((button) => {
+        button.addEventListener("click", () => {
             beatButtons.forEach((b) => b.classList.remove("active"));
-            btn.classList.add("active");
-            BEATS = Number(btn.dataset.beats);
+            button.classList.add("active");
+            BEATS = Number(button.dataset.beats);
             STEP = WIDTH / BEATS;
             RECT_WIDTH = STEP - 10;
             currentBeat = 0;
@@ -155,13 +156,41 @@ const HEIGHT = 100;
         });
     });
 
+    let tapTimes = [];
+    tapButton.addEventListener("click", () => {
+        const now = performance.now();
+
+        if (tapTimes.length && now - tapTimes[tapTimes.length - 1] > 2000) {
+            tapTimes = [];
+        }
+
+        tapTimes.push(now);
+
+        if (tapTimes.length >= 2) {
+            const intervals = [];
+            for (let i = 1; i < tapTimes.length; i++) {
+                intervals.push(tapTimes[i] - tapTimes[i - 1]);
+            }
+            const avgInterval =
+                intervals.reduce((a, b) => a + b, 0) / intervals.length;
+            const newBPM = Math.round(60000 / avgInterval);
+            BPM = Math.min(Math.max(newBPM, 40), 240);
+            bpmSlider.value = BPM;
+            bpmValue.textContent = String(BPM);
+        }
+
+        if (tapTimes.length > 5) {
+            tapTimes.shift();
+        }
+    });
+
     drawRectangles();
 </script>
 
 <style>
     .metronome {
         border: 1px solid;
-        padding: 10px 10px 10px 10px;
+        padding: 10px;
     }
 
     canvas {
@@ -199,7 +228,8 @@ const HEIGHT = 100;
         background: black;
     }
 
-    #toggle {
+    #toggle,
+    #tap {
         background: #333;
         color: white;
         padding: 0.6rem 1.2rem;
@@ -208,7 +238,8 @@ const HEIGHT = 100;
         cursor: pointer;
     }
 
-    #toggle:hover {
+    #toggle:hover,
+    #tap:hover {
         background: #555;
     }
 
