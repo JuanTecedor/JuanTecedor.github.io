@@ -39,13 +39,14 @@ const HEIGHT = 100;
     const canvas = document.querySelector("canvas");
     const context = canvas.getContext("2d");
     const button = document.getElementById("toggle");
-    const bpmSlider = document.getElementById("bpm");
-    const bpmValue = document.getElementById("bpm-value");
-    const beatButtons = document.querySelectorAll(".beat-btn");
+    const bpmSlider = document.querySelector<HTMLInputElement>("#bpm")!;
+    const bpmValue = document.querySelector<HTMLSpanElement>("#bpm-value")!;
+    const beatButtons =
+        document.querySelectorAll<HTMLButtonElement>(".beat-btn");
     const tapButton = document.getElementById("tap");
 
-    const WIDTH = 400;
-    const HEIGHT = 100;
+    const WIDTH = canvas.width;
+    const HEIGHT = canvas.height;
 
     let BEATS = 4;
     let BPM = 120;
@@ -64,14 +65,14 @@ const HEIGHT = 100;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
 
-        osc.frequency.value = isDownbeat ? 880 : 660;
+        osc.frequency.value = isDownbeat ? 880 : 440;
         gain.gain.value = 0.1;
 
         osc.connect(gain);
         gain.connect(audioCtx.destination);
 
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
+        osc.stop(audioCtx.currentTime + 0.05);
     }
 
     function drawRectangles(activeIndex = -1) {
@@ -175,7 +176,7 @@ const HEIGHT = 100;
                 intervals.reduce((a, b) => a + b, 0) / intervals.length;
             const newBPM = Math.round(60000 / avgInterval);
             BPM = Math.min(Math.max(newBPM, 40), 240);
-            bpmSlider.value = BPM;
+            bpmSlider.value = String(BPM);
             bpmValue.textContent = String(BPM);
         }
 
