@@ -28,9 +28,15 @@ const HEIGHT = 200;
             </div>
 
             <div class="group">
-                <label for="bpm">BPM:</label>
-                <input type="range" id="bpm" min="30" max="256" value="120" />
-                <span id="bpm-value">120</span>
+                <span>BPM:</span>
+                <input
+                    type="number"
+                    id="bpm-input"
+                    min="30"
+                    max="256"
+                    value="120"
+                    step="1"
+                />
                 <button id="tap">Tap Tempo</button>
             </div>
         </div>
@@ -129,9 +135,7 @@ const HEIGHT = 200;
         constructor(metronome: Metronome) {
             this.metronome = metronome;
             this.canvas = document.querySelector("canvas") as HTMLCanvasElement;
-            this.context = this.canvas.getContext(
-                "2d",
-            ) as CanvasRenderingContext2D;
+            this.context = this.canvas.getContext("2d")!;
             this.rectHeight = this.canvas.height - 20;
             this.step = this.canvas.width / metronome.beats;
             this.rectWidth = this.step - 10;
@@ -205,13 +209,10 @@ const HEIGHT = 200;
     const metronome = new Metronome(audioContext);
     const renderer = new Renderer(metronome);
 
-    const button = document.getElementById("toggle") as HTMLButtonElement;
-    const bpmSlider = document.querySelector("#bpm") as HTMLInputElement;
-    const bpmValue = document.querySelector("#bpm-value") as HTMLSpanElement;
-    const beatButtons = document.querySelectorAll(
-        ".beat-btn",
-    ) as NodeListOf<HTMLButtonElement>;
-    const tapButton = document.getElementById("tap") as HTMLButtonElement;
+    const button = document.getElementById("toggle")!;
+    const bpmInput = document.getElementById("bpm-input") as HTMLInputElement;
+    const beatButtons = document.querySelectorAll(".beat-btn");
+    const tapButton = document.getElementById("tap")!;
 
     button.addEventListener("click", () => {
         if (metronome.running) {
@@ -224,10 +225,9 @@ const HEIGHT = 200;
         }
     });
 
-    bpmSlider.addEventListener("input", (e) => {
+    bpmInput.addEventListener("change", (e) => {
         const bpm = Number((e.target as HTMLInputElement).value);
         metronome.updateBPM(bpm);
-        bpmValue.textContent = String(bpm);
     });
 
     beatButtons.forEach((btn) => {
@@ -252,8 +252,7 @@ const HEIGHT = 200;
             const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
             const newBPM = Math.min(Math.max(Math.round(60000 / avg), 40), 240);
             metronome.updateBPM(newBPM);
-            bpmSlider.value = String(newBPM);
-            bpmValue.textContent = String(newBPM);
+            bpmInput.value = String(newBPM);
         }
         if (tapTimes.length > 5) tapTimes.shift();
     });
@@ -322,7 +321,11 @@ const HEIGHT = 200;
         background: #555;
     }
 
-    input[type="range"] {
-        accent-color: black;
+    input[type="number"] {
+        width: 80px;
+        padding: 0.3rem;
+        border: 1px solid #888;
+        border-radius: 6px;
+        text-align: center;
     }
 </style>
