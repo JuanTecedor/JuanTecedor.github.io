@@ -35,7 +35,7 @@ const HEIGHT = 200;
                     min="30"
                     max="256"
                     value="120"
-                    step="10"
+                    step="5"
                 />
                 <button id="tap">Tap</button>
             </div>
@@ -78,25 +78,46 @@ const HEIGHT = 200;
         }
     }
 
-    class Metronome {
+    class MetronomeAudio {
         private audioContext: AudioContext;
+        private gainNode: GainNode;
+
+        constructor(initialGain = 0.2) {
+            this.audioContext = new AudioContext();
+            this.gainNode = this.audioContext.createGain();
+            this.gainNode.connect(this.audioContext.destination);
+            this.gainNode.gain.value = initialGain;
+        }
+
+        play(isDownbeat = false): void {
+            const oscillator = this.audioContext.createOscillator();
+            oscillator.frequency.value = isDownbeat ? 880 : 440;
+            oscillator.connect(this.gainNode);
+            oscillator.start();
+            oscillator.stop(this.audioContext.currentTime + 0.05);
+        }
+
+        updateGain(gain: number): void {
+            this.gainNode.gain.value = gain;
+        }
+    }
+
+    class Metronome {
+        private audio: MetronomeAudio;
         beats: number;
         bpm: number;
-        gainLevel: number;
         currentBeat: number;
         running: boolean;
         beatTimer: Timer;
 
         constructor(
-            audioContext: AudioContext,
-            beats = 4,
-            bpm = 120,
-            gainLevel = 0.2,
+            audio: MetronomeAudio,
+            beats: number = 4,
+            bpm: number = 120,
         ) {
-            this.audioContext = audioContext;
+            this.audio = audio;
             this.beats = beats;
             this.bpm = bpm;
-            this.gainLevel = gainLevel;
             this.currentBeat = 0;
             this.running = false;
             this.beatTimer = new Timer(bpm);
@@ -106,8 +127,7 @@ const HEIGHT = 200;
             this.running = true;
             this.currentBeat = 0;
             this.beatTimer = new Timer(this.bpm);
-            this.audioContext.resume();
-            this.playSound(true);
+            this.audio.play(true);
         }
 
         stop(): void {
@@ -116,19 +136,8 @@ const HEIGHT = 200;
 
         nextBeat(): void {
             this.currentBeat = (this.currentBeat + 1) % (this.beats || 1);
-            this.playSound(this.currentBeat === 0);
+            this.audio.play(this.currentBeat === 0);
             this.beatTimer.reset();
-        }
-
-        playSound(isDownbeat = false): void {
-            const osc = this.audioContext.createOscillator();
-            const gain = this.audioContext.createGain();
-            osc.frequency.value = isDownbeat ? 880 : 440;
-            gain.gain.value = this.gainLevel;
-            osc.connect(gain);
-            gain.connect(this.audioContext.destination);
-            osc.start();
-            osc.stop(this.audioContext.currentTime + 0.05);
         }
 
         updateBPM(newBPM: number): void {
@@ -142,14 +151,14 @@ const HEIGHT = 200;
         }
 
         updateGain(newGain: number): void {
-            this.gainLevel = newGain;
+            this.audio.updateGain(newGain);
         }
     }
 
     class Renderer {
         private canvas: HTMLCanvasElement;
         private context: CanvasRenderingContext2D;
-        private metronome: Metronome;
+        private readonly metronome: Metronome;
         private step: number;
         private rectWidth: number;
         private readonly rectHeight: number;
@@ -228,8 +237,8 @@ const HEIGHT = 200;
         }
     }
 
-    const audioContext = new AudioContext();
-    const metronome = new Metronome(audioContext);
+    const metronomeAudio = new MetronomeAudio();
+    const metronome = new Metronome(metronomeAudio);
     const renderer = new Renderer(metronome);
 
     const button = document.getElementById("toggle")!;
