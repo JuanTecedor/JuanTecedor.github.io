@@ -30,13 +30,15 @@ const HEIGHT = 200;
             <div class="group">
                 <span>BPM:</span>
                 <input
-                    type="number"
+                    type="tel"
                     id="bpm-input"
                     min="30"
                     max="256"
                     value="120"
                     step="5"
+                    maxlength="3"
                     pattern="\d*"
+                    onclick="this.select();"
                 />
                 <button id="tap">Tap</button>
             </div>
@@ -374,7 +376,7 @@ const HEIGHT = 200;
         background: #555;
     }
 
-    input[type="number"] {
+    input[type="tel"] {
         width: 6ch;
         padding: 0.3rem;
         border: 1px solid #888;
