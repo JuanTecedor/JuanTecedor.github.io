@@ -1,8 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
-const WIDTH = 400;
-const HEIGHT = 100;
+const WIDTH = 800;
+const HEIGHT = 200;
 ---
 
 <Layout>
@@ -15,19 +15,25 @@ const HEIGHT = 100;
             <div class="group">
                 <label>Beats:</label>
                 <div class="beat-buttons">
-                    <button class="beat-btn" data-beats="2">2</button>
-                    <button class="beat-btn" data-beats="3">3</button>
-                    <button class="beat-btn active" data-beats="4">4</button>
-                    <button class="beat-btn" data-beats="5">5</button>
-                    <button class="beat-btn" data-beats="6">6</button>
-                    <button class="beat-btn" data-beats="7">7</button>
-                    <button class="beat-btn" data-beats="8">8</button>
+                    <!-- Only plays normal beats -->
+                    <button class="beat-btn">0</button>
+                    <!-- Only plays downbeat -->
+                    <button class="beat-btn">1</button>
+                    <!-- Downbeat and rest are normal beats... -->
+                    <button class="beat-btn">2</button>
+                    <button class="beat-btn">3</button>
+                    <button class="beat-btn active">4</button>
+                    <button class="beat-btn">5</button>
+                    <button class="beat-btn">6</button>
+                    <button class="beat-btn">7</button>
+                    <button class="beat-btn">8</button>
+                    <button class="beat-btn">9</button>
                 </div>
             </div>
 
             <div class="group">
                 <label for="bpm">BPM:</label>
-                <input type="range" id="bpm" min="40" max="240" value="120" />
+                <input type="range" id="bpm" min="30" max="256" value="120" />
                 <span id="bpm-value">120</span>
                 <button id="tap">Tap Tempo</button>
             </div>
@@ -36,14 +42,41 @@ const HEIGHT = 100;
 </Layout>
 
 <script>
-    const canvas = document.querySelector("canvas");
-    const context = canvas.getContext("2d");
-    const button = document.getElementById("toggle");
-    const bpmSlider = document.querySelector<HTMLInputElement>("#bpm")!;
-    const bpmValue = document.querySelector<HTMLSpanElement>("#bpm-value")!;
-    const beatButtons =
-        document.querySelectorAll<HTMLButtonElement>(".beat-btn");
-    const tapButton = document.getElementById("tap");
+    class Timer {
+        readonly bpm: number;
+        readonly waitTime: number;
+        startTime: DOMHighResTimeStamp;
+
+        constructor(bpm: number) {
+            this.bpm = bpm;
+            this.waitTime = (60 / bpm) * 1_000;
+            this.startTime = performance.now();
+        }
+
+        reset(): void {
+            this.startTime = performance.now();
+        }
+
+        elapsed(): DOMHighResTimeStamp {
+            return performance.now() - this.startTime;
+        }
+
+        done(): boolean {
+            return this.elapsed() >= this.waitTime;
+        }
+    }
+
+    const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+    const context = canvas.getContext("2d") as CanvasRenderingContext2D;
+    const audioContext = new AudioContext();
+
+    const button = document.getElementById("toggle") as HTMLButtonElement;
+    const bpmSlider = document.querySelector("#bpm") as HTMLInputElement;
+    const bpmValue = document.querySelector("#bpm-value") as HTMLSpanElement;
+    const beatButtons = document.querySelectorAll(
+        ".beat-btn",
+    ) as NodeListOf<HTMLButtonElement>;
+    const tapButton = document.getElementById("tap") as HTMLButtonElement;
 
     const WIDTH = canvas.width;
     const HEIGHT = canvas.height;
@@ -56,33 +89,28 @@ const HEIGHT = 100;
 
     let currentBeat = 0;
     let running = false;
-    let startTime = 0;
-    let lastBeat = -1;
+    let beatTimer = new Timer(0);
 
-    const audioContext = new AudioContext();
-
-    function playBeatSound(isDownbeat = false) {
+    function playBeatSound(currentBeat: number, BEATS: number): void {
+        const isDownbeat = currentBeat === 0 && BEATS !== 0;
         const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-
         osc.frequency.value = isDownbeat ? 880 : 440;
+        const gain = audioContext.createGain();
         gain.gain.value = 0.2;
-
         osc.connect(gain);
         gain.connect(audioContext.destination);
-
         osc.start();
         osc.stop(audioContext.currentTime + 0.05);
     }
 
-    function drawRectangles(activeIndex = -1) {
-        for (let i = 0; i < BEATS; i++) {
+    function drawRectangles(activeIndex: number = -1): void {
+        for (let i = 0; i < (BEATS === 0 ? 1 : BEATS); i++) {
             context.fillStyle = i === activeIndex ? "black" : "gray";
             context.fillRect(i * STEP + 5, 10, RECT_WIDTH, RECT_HEIGHT);
         }
     }
 
-    function drawLine(x) {
+    function drawLine(x: number): void {
         context.beginPath();
         context.moveTo(x, 0);
         context.lineTo(x, HEIGHT);
@@ -91,47 +119,41 @@ const HEIGHT = 100;
         context.stroke();
     }
 
-    function drawFrame(timestamp) {
-        if (!running) return;
-
-        const BEAT_DURATION = (60 / BPM) * 1000;
-        const elapsed = timestamp - startTime;
-        const totalCycle = BEATS * BEAT_DURATION;
-        const cycleProgress = (elapsed % totalCycle) / BEAT_DURATION;
-
-        currentBeat = Math.floor(cycleProgress);
-        const progressWithinBeat = cycleProgress % 1;
-        const linePosition = currentBeat * STEP + progressWithinBeat * STEP;
-
-        if (currentBeat !== lastBeat) {
-            playBeatSound(currentBeat === 0);
-            lastBeat = currentBeat;
+    function drawFrame(): void {
+        if (!running) {
+            return;
         }
+
+        const BEAT_DURATION = (60 / BPM) * 1_000;
+        const progress = beatTimer.elapsed() / BEAT_DURATION;
+        const linePosition = currentBeat * STEP + Math.min(progress, 1) * STEP;
 
         context.clearRect(0, 0, WIDTH, HEIGHT);
         drawRectangles(currentBeat);
         drawLine(linePosition);
 
+        if (beatTimer.done()) {
+            currentBeat = (currentBeat + 1) % BEATS;
+            playBeatSound(currentBeat, BEATS);
+            beatTimer.reset();
+        }
+
         requestAnimationFrame(drawFrame);
     }
 
-    async function startMetronome() {
+    async function startMetronome(): Promise<void> {
         running = true;
         currentBeat = 0;
-        lastBeat = -1;
-        startTime = performance.now();
+        beatTimer = new Timer(BPM);
         button.textContent = "Stop";
         await audioContext.resume();
+        playBeatSound(currentBeat, BEATS);
         requestAnimationFrame(drawFrame);
     }
 
-    function stopMetronome() {
+    function stopMetronome(): void {
         running = false;
         button.textContent = "Start";
-        currentBeat = 0;
-        lastBeat = -1;
-        context.clearRect(0, 0, WIDTH, HEIGHT);
-        drawRectangles();
     }
 
     button.addEventListener("click", () => {
@@ -142,14 +164,17 @@ const HEIGHT = 100;
         const target = event.target as HTMLInputElement;
         BPM = Number(target.value);
         bpmValue.textContent = String(BPM);
+        if (beatTimer) {
+            beatTimer = new Timer(BPM);
+        }
     });
 
-    beatButtons.forEach((button) => {
-        button.addEventListener("click", () => {
+    beatButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
             beatButtons.forEach((b) => b.classList.remove("active"));
-            button.classList.add("active");
-            BEATS = Number(button.dataset.beats);
-            STEP = WIDTH / BEATS;
+            btn.classList.add("active");
+            BEATS = Number(btn.textContent);
+            STEP = WIDTH / (BEATS === 0 ? 1 : BEATS);
             RECT_WIDTH = STEP - 10;
             currentBeat = 0;
             context.clearRect(0, 0, WIDTH, HEIGHT);
@@ -161,7 +186,7 @@ const HEIGHT = 100;
     tapButton.addEventListener("click", () => {
         const now = performance.now();
 
-        if (tapTimes.length && now - tapTimes[tapTimes.length - 1] > 2000) {
+        if (tapTimes.length && now - tapTimes[tapTimes.length - 1] > 2_000) {
             tapTimes = [];
         }
 
@@ -174,15 +199,16 @@ const HEIGHT = 100;
             }
             const avgInterval =
                 intervals.reduce((a, b) => a + b, 0) / intervals.length;
-            const newBPM = Math.round(60000 / avgInterval);
+            const newBPM = Math.round(60_000 / avgInterval);
             BPM = Math.min(Math.max(newBPM, 40), 240);
             bpmSlider.value = String(BPM);
             bpmValue.textContent = String(BPM);
+            if (beatTimer) {
+                beatTimer = new Timer(BPM);
+            }
         }
 
-        if (tapTimes.length > 5) {
-            tapTimes.shift();
-        }
+        if (tapTimes.length > 5) tapTimes.shift();
     });
 
     drawRectangles();
