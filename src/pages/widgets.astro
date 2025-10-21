@@ -214,6 +214,9 @@ const HEIGHT = 200;
     const beatButtons = document.querySelectorAll(".beat-btn");
     const tapButton = document.getElementById("tap")!;
 
+    const MIN_BPM = Number(bpmInput.min);
+    const MAX_BPM = Number(bpmInput.max);
+
     button.addEventListener("click", () => {
         if (metronome.running) {
             metronome.stop();
@@ -225,8 +228,13 @@ const HEIGHT = 200;
         }
     });
 
-    bpmInput.addEventListener("change", (e) => {
-        const bpm = Number((e.target as HTMLInputElement).value);
+    bpmInput.addEventListener("change", (event) => {
+        let bpm = Number((event.target as HTMLInputElement).value);
+        if (isNaN(bpm)) {
+            return;
+        }
+        bpm = Math.min(Math.max(bpm, MIN_BPM), MAX_BPM);
+        bpmInput.value = String(bpm);
         metronome.updateBPM(bpm);
     });
 
@@ -250,7 +258,10 @@ const HEIGHT = 200;
         if (tapTimes.length >= 2) {
             const intervals = tapTimes.slice(1).map((t, i) => t - tapTimes[i]);
             const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-            const newBPM = Math.min(Math.max(Math.round(60000 / avg), 40), 240);
+            const newBPM = Math.min(
+                Math.max(Math.round(60000 / avg), MIN_BPM),
+                MAX_BPM,
+            );
             metronome.updateBPM(newBPM);
             bpmInput.value = String(newBPM);
         }
