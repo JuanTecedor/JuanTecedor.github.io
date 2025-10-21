@@ -39,6 +39,18 @@ const HEIGHT = 200;
                 />
                 <button id="tap">Tap</button>
             </div>
+
+            <div class="group">
+                <span>Gain:</span>
+                <input
+                    type="range"
+                    id="gain-slider"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="0.2"
+                />
+            </div>
         </div>
     </div>
 </Layout>
@@ -70,14 +82,21 @@ const HEIGHT = 200;
         private audioContext: AudioContext;
         beats: number;
         bpm: number;
+        gainLevel: number;
         currentBeat: number;
         running: boolean;
         beatTimer: Timer;
 
-        constructor(audioContext: AudioContext, beats = 4, bpm = 120) {
+        constructor(
+            audioContext: AudioContext,
+            beats = 4,
+            bpm = 120,
+            gainLevel = 0.2,
+        ) {
             this.audioContext = audioContext;
             this.beats = beats;
             this.bpm = bpm;
+            this.gainLevel = gainLevel;
             this.currentBeat = 0;
             this.running = false;
             this.beatTimer = new Timer(bpm);
@@ -105,7 +124,7 @@ const HEIGHT = 200;
             const osc = this.audioContext.createOscillator();
             const gain = this.audioContext.createGain();
             osc.frequency.value = isDownbeat ? 880 : 440;
-            gain.gain.value = 0.2;
+            gain.gain.value = this.gainLevel;
             osc.connect(gain);
             gain.connect(this.audioContext.destination);
             osc.start();
@@ -120,6 +139,10 @@ const HEIGHT = 200;
         updateBeats(newBeats: number): void {
             this.beats = newBeats;
             this.currentBeat = 0;
+        }
+
+        updateGain(newGain: number): void {
+            this.gainLevel = newGain;
         }
     }
 
@@ -211,6 +234,9 @@ const HEIGHT = 200;
 
     const button = document.getElementById("toggle")!;
     const bpmInput = document.getElementById("bpm-input") as HTMLInputElement;
+    const gainSlider = document.getElementById(
+        "gain-slider",
+    ) as HTMLInputElement;
     const beatButtons = document.querySelectorAll(".beat-btn");
     const tapButton = document.getElementById("tap")!;
 
@@ -236,6 +262,11 @@ const HEIGHT = 200;
         bpm = Math.min(Math.max(bpm, MIN_BPM), MAX_BPM);
         bpmInput.value = String(bpm);
         metronome.updateBPM(bpm);
+    });
+
+    gainSlider.addEventListener("input", (event) => {
+        const gain = Number((event.target as HTMLInputElement).value);
+        metronome.updateGain(gain);
     });
 
     beatButtons.forEach((btn) => {
@@ -339,5 +370,12 @@ const HEIGHT = 200;
         border: 1px solid #888;
         border-radius: 8px;
         text-align: center;
+    }
+
+    input[type="range"] {
+        min-width: 0;
+        accent-color: black;
+        cursor: pointer;
+        flex-grow: 1;
     }
 </style>
